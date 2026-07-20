@@ -6,6 +6,7 @@ import { FileText, ArrowLeft, ChevronRight, CheckCircle2, LogOut, LayoutDashboar
 import DocumentationViewer from './components/DocumentationViewer'
 import StepsUI from './components/StepsUI'
 import LoginPage from './components/LoginPage'
+import ApiLogin from './components/ApiLogin'
 import Sidebar from './components/Sidebar'
 import UsersList from './components/UsersList'
 import AgentsSection from './components/AgentsSection'
@@ -18,6 +19,8 @@ import AgentContacts from './components/AgentContacts'
 import AgentCallHistory from './components/AgentCallHistory'
 import AgentReports from './components/AgentReports'
 import AgentSettings from './components/AgentSettings'
+import TubelightDemo from './components/TubelightDemo'
+import TubelightDialer from './components/TubelightDialer'
 
 // LoginPage wrapper with navigation
 const LoginPageWithRouter = ({ onLogin }) => {
@@ -39,6 +42,22 @@ const LoginPageWithRouter = ({ onLogin }) => {
   }
   
   return <LoginPage onLogin={handleLogin} onShowDocs={handleShowDocs} />
+}
+
+// ApiLogin wrapper with navigation
+const ApiLoginWithRouter = ({ onLogin }) => {
+  const navigate = useNavigate()
+  
+  const handleLogin = (userData) => {
+    onLogin(userData)
+    navigate('/')
+  }
+  
+  const handleBack = () => {
+    navigate('/login')
+  }
+  
+  return <ApiLogin onLogin={handleLogin} onBack={handleBack} />
 }
 
 // Dashboard Component
@@ -248,7 +267,7 @@ const AgentSidebar = ({ onLogout, user }) => {
 }
 
 // Main App Layout with Routing
-const AppLayout = ({ user, onLogout, callState, selectedAgent, callData, phoneNumber, setPhoneNumber, isDialerOpen, setIsDialerOpen, onInitiateCall, onCallInitiated, onDial, onEndCall, onCancelCall }) => {
+const AppLayout = ({ user, onLogout, callState, selectedAgent, callData, phoneNumber, setPhoneNumber, isDialerOpen, setIsDialerOpen, onInitiateCall, onCallInitiated, onDial, onEndCall, onCancelCall, showTubelightDialer, setShowTubelightDialer, agentVerificationKey }) => {
   const location = useLocation()
   const isAgent = user?.role === 'agent'
   const showSidebar = !location.pathname.includes('/docs') && !location.pathname.includes('/steps')
@@ -319,6 +338,7 @@ const AppLayout = ({ user, onLogout, callState, selectedAgent, callData, phoneNu
           {/* Shared Routes */}
           <Route path="/docs" element={<DocumentationViewer />} />
           <Route path="/steps" element={<StepsUI />} />
+          <Route path="/tubelight-demo" element={<TubelightDemo />} />
           <Route path="*" element={<Navigate to={isAgent ? "/agent" : "/"} replace />} />
         </Routes>
       </main>
@@ -329,7 +349,8 @@ const AppLayout = ({ user, onLogout, callState, selectedAgent, callData, phoneNu
           onDial={onDial} 
           onHangup={() => setIsDialerOpen(false)} 
           phoneNumber={phoneNumber} 
-          setPhoneNumber={setPhoneNumber} 
+          setPhoneNumber={setPhoneNumber}
+          agentVerificationKey="agent@example.com"
         />
       </Modal>
 
@@ -345,12 +366,19 @@ const AppLayout = ({ user, onLogout, callState, selectedAgent, callData, phoneNu
       {/* Floating Dial Button for Agents */}
       {showFloatingDialer && (
         <button
-          onClick={() => setIsDialerOpen(true)}
+          onClick={() => setShowTubelightDialer(true)}
           className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-full shadow-2xl shadow-green-500/30 hover:shadow-green-500/50 transition-all duration-200 flex items-center justify-center hover:scale-110"
         >
           <PhoneCall className="w-7 h-7" />
         </button>
       )}
+
+      {/* Tubelight Dialer Modal */}
+      <Modal isOpen={showTubelightDialer} onClose={() => setShowTubelightDialer(false)} title="Tubelight Dialer">
+        <div className="flex justify-center">
+          <TubelightDialer agentVerificationKey={agentVerificationKey} />
+        </div>
+      </Modal>
     </div>
   )
 }
@@ -368,6 +396,8 @@ function App() {
   const [callData, setCallData] = useState(null)
   const [phoneNumber, setPhoneNumber] = useState('')
   const [isDialerOpen, setIsDialerOpen] = useState(false)
+  const [showTubelightDialer, setShowTubelightDialer] = useState(false)
+  const [agentVerificationKey, setAgentVerificationKey] = useState('subodhv.onpoint@gmail.com')
 
   const handleLogin = (userData) => {
     setUser(userData.user || userData)
@@ -429,9 +459,10 @@ function App() {
   return (
     <Router>
       {!isLoggedIn ? (
-        <LoginPageWithRouter 
-          onLogin={handleLogin} 
-        />
+        <Routes>
+          <Route path="/api-login" element={<ApiLoginWithRouter onLogin={handleLogin} />} />
+          <Route path="*" element={<LoginPageWithRouter onLogin={handleLogin} />} />
+        </Routes>
       ) : (
         <AppLayout
           user={user}
@@ -448,6 +479,9 @@ function App() {
           onDial={handleDial}
           onEndCall={handleEndCall}
           onCancelCall={handleCancelCall}
+          showTubelightDialer={showTubelightDialer}
+          setShowTubelightDialer={setShowTubelightDialer}
+          agentVerificationKey={agentVerificationKey}
         />
       )}
     </Router>

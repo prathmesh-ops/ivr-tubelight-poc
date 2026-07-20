@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './Card'
 import { Button } from './Button'
-import { FileText, Lock, Mail, ArrowRight, Shield, User } from 'lucide-react'
+import { FileText, Lock, Mail, ArrowRight, Shield, User, AlertCircle, Key } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const LoginPage = ({ onLogin, onShowDocs }) => {
   const [formData, setFormData] = useState({
@@ -105,6 +106,8 @@ const LoginPage = ({ onLogin, onShowDocs }) => {
                   />
                 </div>
               </div>
+
+             
               <div className="space-y-2">
                 <label className="text-sm font-medium">Username or Email</label>
                 <div className="relative">
@@ -141,6 +144,15 @@ const LoginPage = ({ onLogin, onShowDocs }) => {
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <Link
+                to="/api-login"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-all duration-200 text-sm font-medium"
+              >
+                <Key className="w-4 h-4" />
+                Use API Authentication
+              </Link>
+            </div>
             <div className="mt-4 text-center text-sm text-muted-foreground">
               <p>Demo credentials: any username/password</p>
             </div>
